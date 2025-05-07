@@ -189,10 +189,7 @@ class Page1State extends State<Page1> {
         uRow([]),
         uRow([
           uText('clear'),
-          uCol([
-            //uBtnIcon(_clear, Icons.bolt),
-            uBtnText(_clear, "Clear"),
-          ]),
+          uCol([uBtnText(_clear, "Clear")]),
         ]),
       ]),
     );
@@ -257,7 +254,6 @@ class Page3State extends State<Page3> {
   }
 }
 
-// WIP
 class Page4 extends StatefulWidget {
   const Page4({super.key});
 
@@ -268,8 +264,9 @@ class Page4 extends StatefulWidget {
 class Page4State extends State<Page4> {
   late Thread _th1;
   int _counter = 0;
+  bool _btnEnabled = true;
 
-  //Must be static
+  //Must be static, must have TxChan input parameter
   static void threadFun(TxChan sendport) {
     var num = 0;
 
@@ -278,17 +275,25 @@ class Page4State extends State<Page4> {
       sendport.send(num);
       uSleepS(1);
     }
+    sendport.send("done");
   }
 
-  Any rxFun(Any d) {
-    setState(() {
-      _counter = d as int;
-    });
+  Any rxFromThreadFun(Any messageFromThread) {
+    if (messageFromThread == "done") {
+      setState(() {
+        _btnEnabled = true;
+      });
+    } else {
+      setState(() {
+        _btnEnabled = false;
+        _counter = messageFromThread as int;
+      });
+    }
   }
 
   Future<void> initAsync() async {
     _th1 = uThreadInit();
-    _th1.uRxChanCallback(rxFun);
+    _th1.uRxChanCallback(rxFromThreadFun);
   }
 
   @override
@@ -305,14 +310,22 @@ class Page4State extends State<Page4> {
 
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    return uPage(context, "Isolate", 
+    return uPage(
+      context,
+      "Isolate",
       uColNoExp([
         uTextNoExp('$_counter', 3.0),
         uRow([]),
-        uBtnText(() => _th1.uThreadStart(threadFun, _th1.sendPort), "Start"),
-      ]));
+        uBtnText(
+          () => _th1.uThreadStart(threadFun, _th1.sendPort),
+          "Start",
+          bCol: Colors.blue,
+          enabled: _btnEnabled,
+        ),
+      ]),
+    );
   }
 }

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-
 import 'package:camera/camera.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:isolate';
-
 
 typedef Any = dynamic;
 
@@ -28,7 +26,6 @@ class UtilsCfg {
     prefs = await SharedPreferences.getInstance();
   }
 }
-
 
 Future<void> uGoToPage(BuildContext context, Widget page) async {
   await Navigator.of(
@@ -126,16 +123,17 @@ Widget uBtnIcon(Function() fun, [IconData? icon]) {
 
 Widget uBtnText(
   Function() fun,
-  String text, [
-  Color? backColor = Colors.red,
-  Color? foreColor = Colors.white,
-]) {
+  String text, {
+  Color? bCol = Colors.red,
+  Color? fCol = Colors.white,
+  bool enabled = true,
+}) {
   return ElevatedButton(
-    onPressed: fun,
+    onPressed: enabled ? fun : null,
     style: ElevatedButton.styleFrom(
       minimumSize: Size.square(60.0),
-      backgroundColor: backColor,
-      foregroundColor: foreColor,
+      backgroundColor: bCol,
+      foregroundColor: fCol,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
     ),
     child: Text(text),
@@ -217,7 +215,6 @@ Widget uThreeDots(
 void uSleepS(int seconds) {
   var duration = Duration(seconds: seconds);
   sleep(duration);
-
 }
 
 ////import 'dart:isolate';
@@ -255,10 +252,9 @@ class Thread {
   void uSend(Any message) {
     sendPort.send(message);
   }
-
 }
 
-Thread uThreadInit() {  
+Thread uThreadInit() {
   var receivePort = ReceivePort();
   //var isolate = await Isolate.spawn(fun!, par);
   //receivePort.listen(onReceive);
