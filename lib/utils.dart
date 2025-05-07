@@ -211,37 +211,44 @@ Widget uThreeDots(
   );
 }
 
+void uSleepS(int seconds) {
+  var duration = Duration(seconds: seconds);
+  sleep(duration);
+
+}
+
 ////import 'dart:isolate';
+
+typedef TxChan = SendPort;
+
 class Thread {
-  late Isolate id;
-  late ReceivePort chanRx;
-  late SendPort chanTx;
+  late Isolate isolate;
+  late ReceivePort receivePort;
+  late SendPort sendPort;
+  var uThreadStart = Isolate.spawn;
 
-  Thread(chanRx);
+  Thread();
 
-  Future<void> uStart(Function(dynamic) fun, dynamic par) async {
-    chanTx = chanRx.sendPort;
-    id = await Isolate.spawn(fun, par);
+
+  void uRxChanCallback(Function(dynamic) onReceive) {
+    receivePort.listen(onReceive);
   }
 
-  void uReadCallback(Function(dynamic) onReceive) {
-    chanRx.listen(onReceive);
-  }
-
-  void uSend(Object? message) {
-    chanTx.send(message);
+  void uSend(dynamic message) {
+    sendPort.send(message);
   }
 
 }
 
 Thread uThreadInit() {  
-
   var receivePort = ReceivePort();
   //var isolate = await Isolate.spawn(fun!, par);
-
   //receivePort.listen(onReceive);
 
-  var thread = Thread(receivePort);
+  var thread = Thread();
+  thread.receivePort = receivePort;
+  thread.sendPort = receivePort.sendPort;
+
   return thread;
 }
 

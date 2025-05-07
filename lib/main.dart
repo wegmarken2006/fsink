@@ -41,7 +41,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // three dots items
-  var items = ["camera", "buttons", "list", "tabs"];
+  var items = ["camera", "buttons", "list", "tabs", "isolate"];
   void menuFun(String item) {
     switch (item) {
       case "camera":
@@ -56,6 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
       case "tabs":
         uGoToPage(context, Page3());
         break;
+      case "isolate":
+        uGoToPage(context, Page4());
+        break;
+
       default:
     }
   }
@@ -253,7 +257,6 @@ class Page3State extends State<Page3> {
   }
 }
 
-
 // WIP
 class Page4 extends StatefulWidget {
   const Page4({super.key});
@@ -263,22 +266,29 @@ class Page4 extends StatefulWidget {
 }
 
 class Page4State extends State<Page4> {
-  Thread th1 = uThreadInit();
+  late Thread _th1;
+  int _counter = 0;
 
-  void fun1(dynamic num) {
-    setState(() {
-      num = num + 10;      
-    });
-    th1.uSend(num);
+  //Must be static
+  static void threadFun(TxChan sendport) {
+    var num = 0;
+
+    for (var i = 0; i < 4; i++) {
+      num = num + 10;
+      sendport.send(num);
+      uSleepS(1);
+    }
   }
 
-  dynamic rx1(dynamic d) {
-
+  dynamic rxFun(dynamic d) {
+    setState(() {
+      _counter = d as int;
+    });
   }
 
   Future<void> initAsync() async {
-    th1.uReadCallback(rx1);
-    th1.uStart(fun1, 0);
+    _th1 = uThreadInit();
+    _th1.uRxChanCallback(rxFun);
   }
 
   @override
@@ -289,6 +299,10 @@ class Page4State extends State<Page4> {
 
   @override
   Widget build(BuildContext context) {
-    return uPage(context, "Isolate", uColNoExp([]));
+    return uPage(context, "Isolate", 
+      uColNoExp([
+        uTextNoExp('$_counter', 3.0),
+        uBtnText(() => _th1.uThreadStart(threadFun, _th1.sendPort), "Start"),
+      ]));
   }
 }
