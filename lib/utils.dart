@@ -7,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:isolate';
 
+
+typedef Any = dynamic;
+
 var uCfg = UtilsCfg();
 
 class UtilsCfg {
@@ -225,16 +228,31 @@ class Thread {
   late Isolate isolate;
   late ReceivePort receivePort;
   late SendPort sendPort;
-  var uThreadStart = Isolate.spawn;
+  late ReceivePort exitPort;
+  //var uThreadStart = Isolate.spawn;
+  bool isRunning = false;
 
   Thread();
 
+  void uThreadStart(Function(TxChan) fun, TxChan par) async {
+    if (!isRunning) {
+      isRunning = true;
+      isolate = await Isolate.spawn(fun, par, onExit: exitPort.sendPort);
+    }
+  }
 
-  void uRxChanCallback(Function(dynamic) onReceive) {
+  void uThreadStop() {
+    isolate.kill();
+    receivePort.close();
+    exitPort.close();
+    isRunning = false;
+  }
+
+  void uRxChanCallback(Function(Any) onReceive) {
     receivePort.listen(onReceive);
   }
 
-  void uSend(dynamic message) {
+  void uSend(Any message) {
     sendPort.send(message);
   }
 
@@ -247,7 +265,12 @@ Thread uThreadInit() {
 
   var thread = Thread();
   thread.receivePort = receivePort;
+  thread.exitPort = ReceivePort();
   thread.sendPort = receivePort.sendPort;
+
+  thread.exitPort.listen((_) {
+    thread.isRunning = false;
+  });
 
   return thread;
 }

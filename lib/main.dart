@@ -280,7 +280,7 @@ class Page4State extends State<Page4> {
     }
   }
 
-  dynamic rxFun(dynamic d) {
+  Any rxFun(Any d) {
     setState(() {
       _counter = d as int;
     });
@@ -298,10 +298,20 @@ class Page4State extends State<Page4> {
   }
 
   @override
+  void dispose() {
+    try {
+      _th1.uThreadStop();
+    } catch (e) {}
+
+    super.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return uPage(context, "Isolate", 
       uColNoExp([
         uTextNoExp('$_counter', 3.0),
+        uRow([]),
         uBtnText(() => _th1.uThreadStart(threadFun, _th1.sendPort), "Start"),
       ]));
   }
