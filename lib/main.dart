@@ -204,27 +204,42 @@ class Page2 extends StatefulWidget {
 }
 
 class Page2State extends State<Page2> {
-  var sList = ["goto Home", "goto Page1", "goto flutter"];
+  late (String, List<String>, List<String>) _fromRss;
+  String _feedTitle = "";
+  List<String> _titles = [];
+  List<String> _links = [];
+
+  void initAsync() async {
+    uGetFeed("https://hnrss.org/frontpage").then((feed) {
+      setState(() {
+        _feedTitle = feed.$1;
+        _titles = feed.$2 as List<String>;
+        _links = feed.$3 as List<String>;
+      });
+    });
+  }
 
   void fun(int index) {
-    switch (index) {
-      case 0:
-        uGoToPage(context, MyHomePage(title: 'Fsink'));
-        break;
-      case 1:
-        uGoToPage(context, Page1());
-        break;
-      case 2:
-        uGoToWeb('https://flutter.dev');
-        break;
-      default:
-    }
+    uGoToWeb(_links[index]);
+  }
+
+  @override
+  initState() {
+    super.initState();
+    initAsync();
   }
 
   @override
   Widget build(BuildContext context) {
-    return uPage(context, "List", uListView(context, sList, fun));
+    return uPage(
+      context,
+      "List",
+      uColNoExp([
+        uTextNoExp(_feedTitle, 1.8),
+        uListView(context, _titles, _links, fun)]),
+    );
   }
+
 }
 
 class Page3 extends StatefulWidget {

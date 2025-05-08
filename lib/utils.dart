@@ -4,7 +4,11 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'dart:isolate';
+
+import 'package:webfeed_plus/webfeed_plus.dart';
+import 'package:http/http.dart' as http;
 
 typedef Any = dynamic;
 
@@ -67,22 +71,35 @@ Widget uPageMenu(
   );
 }
 
-Widget uListView(BuildContext context, List lst, Function(int) fun) {
-  return ListView.builder(
-    itemCount: lst.length,
-    itemBuilder: (BuildContext context, int index) {
-      return ListTile(
-        leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context).primaryColorLight, //Colors.lightGreenAccent,
-          child: Text('${index + 1}'),
-        ),
-        title: Text('${lst[index]}'),
-        subtitle: Text('${lst[index]}'),
-        onTap: () => fun(index),
-      );
-    },
-  );
+Widget uListView(
+  BuildContext context,
+  List lst,
+  List subLst,
+  Function(int) fun,
+) {
+  if (lst.isNotEmpty) {
+    return uExp(
+      ListView.builder(
+        itemCount: lst.length,
+        itemBuilder: (BuildContext context, int index) {
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor:
+                  Theme.of(
+                    context,
+                  ).primaryColorLight, //Colors.lightGreenAccent,
+              child: Text('${index + 1}'),
+            ),
+            title: Text('${lst[index]}'),
+            subtitle: subLst.isNotEmpty ? Text('${subLst[index]}') : null,
+            onTap: () => fun(index),
+          );
+        },
+      ),
+    );
+  } else {
+    return const Center(child: CircularProgressIndicator());
+  }
 }
 
 Widget uTabs(List<String> names, List<Widget> pages) {
@@ -217,7 +234,7 @@ void uSleepS(int seconds) {
   sleep(duration);
 }
 
-////import 'dart:isolate';
+//import 'dart:isolate';
 
 typedef TxChan = SendPort;
 
@@ -271,7 +288,7 @@ Thread uThreadInit() {
   return thread;
 }
 
-////import 'package:url_launcher/url_launcher.dart';
+//import 'package:url_launcher/url_launcher.dart';
 Future<void> uGoToWeb(String address) async {
   Uri url = Uri.parse(address);
 
@@ -295,8 +312,9 @@ void uSetPersistInt(String valName, int value) {
   uCfg.prefs.setInt(valName, value);
 }
 
-////import 'package:camera/camera.dart';
-//call in initState
+//import 'package:camera/camera.dart';
+
+/// Call inside initState
 void uInitStateCamera() {
   uCfg.controller = CameraController(
     // Get a specific camera from the list of available cameras.
@@ -309,12 +327,12 @@ void uInitStateCamera() {
   uCfg.initializeControllerFuture = uCfg.controller.initialize();
 }
 
-// Example call:
-// return uPage(
-//       context,
-//       widget.title,
-//       uCameraPreview()
-//     );
+/// Example call:
+/// return uPage(
+///       context,
+///       widget.title,
+///       uCameraPreview()
+///     );
 Widget uCameraPreview() {
   return FutureBuilder<void>(
     future: uCfg.initializeControllerFuture,
@@ -330,14 +348,15 @@ Widget uCameraPreview() {
   );
 }
 
-// pass to floatingActionButton, example:
-//  return uPage(
-//      context,
-//      widget.title,
-//      uCameraPreview(),
-//      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
-//    );
-//
+/// pass to floatingActionButton, example:
+///
+///  return uPage(
+///      context,
+///      widget.title,
+///      uCameraPreview(),
+///      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
+///    );
+///
 Future<void> uCameraPicture(BuildContext context) async {
   try {
     // Ensure that the camera is initialized.
@@ -380,4 +399,58 @@ class DisplayPictureScreen extends StatelessWidget {
       body: Image.file(File(imagePath)),
     );
   }
+}
+
+//import 'package:webfeed_plus/webfeed_plus.dart';
+
+/*
+Future<(String, List, List)> uGetFeed(String address) async {
+  List<String> titles = [];
+  List<String> links = [];
+
+  var feedUrl = address;
+  String title = "?";
+
+  var text = await http.read(Uri.parse(feedUrl));
+  var channel = RssFeed.parse(text);
+
+  title = channel.title!;
+  if (channel.items != null) {
+    for (var item in channel.items!) {
+      titles.add(item.title!);
+      links.add(item.link!);
+    }
+  }
+  
+  return (title, titles, links);
+}
+*/
+
+Future<(String, List, List)> uGetFeed(String address) async {
+  List<String> titles = [];
+  List<String> links = [];
+  List<RssItem> items = [];
+
+  String title = "?";
+
+  try {
+    final response = await http.get(Uri.parse(address));
+    if (response.statusCode == 200) {
+      final feed = RssFeed.parse(response.body);
+
+      items = feed.items ?? [];
+      title = feed.title!;
+      if (feed.items != null) {
+        for (var item in items) {
+          titles.add(item.title!);
+          links.add(item.link!);
+        }
+      }
+    }
+  } catch (e) {
+    print('Error fetching RSS feed: $e');
+  }
+
+  print(title);
+  return (title, titles, links);
 }
