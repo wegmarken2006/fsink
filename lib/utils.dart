@@ -338,12 +338,12 @@ Thread uThreadInit() {
 //import 'package:external_path/external_path.dart';
 //import 'package:permission_handler/permission_handler.dart';
 
-Future<String> uGetPathForImage() async {
+Future<String> uGetPathForImageSave() async {
   var fileName = "${DateTime.now()}.png";
   fileName = fileName.replaceAll(":", "_");
   fileName = fileName.replaceAll(" ", "");
 
-  await Permission.storage.request();
+  //await Permission.storage.request(); //what is the function of this? I can write also without.
   var path = await ExternalPath.getExternalStoragePublicDirectory(
     ExternalPath.DIRECTORY_DOWNLOAD,
   );
@@ -423,6 +423,7 @@ Widget uCameraPreview() {
 ///      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
 ///    );
 ///
+///  Optional save flag to store the image in Download
 Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
   try {
     // Ensure that the camera is initialized.
@@ -433,7 +434,7 @@ Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
     final image = await uCfg.controller.takePicture();
 
     if (save) {
-      final pathToSave = await uGetPathForImage();
+      final pathToSave = await uGetPathForImageSave();
       image.saveTo(pathToSave);
     }
 
