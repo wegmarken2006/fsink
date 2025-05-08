@@ -71,6 +71,16 @@ Widget uPageMenu(
   );
 }
 
+/// Use this Expanded version inside uCol.
+/// 
+/// Example: 
+/// 
+/// return uPage(
+///      context,
+///      "List",
+///      uColNoExp([
+///        uListView(context, _titles, _links, fun)]),
+///    );
 Widget uListView(
   BuildContext context,
   List lst,
@@ -100,6 +110,39 @@ Widget uListView(
   } else {
     return const Center(child: CircularProgressIndicator());
   }
+}
+
+/// Use the no Expanded version inside uRefresh
+Widget uListViewNoExp(
+  BuildContext context,
+  List lst,
+  List subLst,
+  Function(int) fun,
+) {
+  if (lst.isNotEmpty) {
+    return ListView.builder(
+      itemCount: lst.length,
+      itemBuilder: (BuildContext context, int index) {
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor:
+                Theme.of(context).primaryColorLight, //Colors.lightGreenAccent,
+            child: Text('${index + 1}'),
+          ),
+          title: Text('${lst[index]}'),
+          subtitle: subLst.isNotEmpty ? Text('${subLst[index]}') : null,
+          onTap: () => fun(index),
+        );
+      },
+    );
+  } else {
+    return const Center(child: CircularProgressIndicator());
+  }
+}
+
+/// Swipe down Refresh. Pass a not Expanded widget to avoid "Incorrect use of ParentDataWidget" error.
+Widget uRefresh(RefreshCallback fun, Widget widget) {
+  return uExp(RefreshIndicator(onRefresh: fun, child: widget));
 }
 
 Widget uTabs(List<String> names, List<Widget> pages) {
@@ -248,6 +291,7 @@ class Thread {
 
   Thread();
 
+  /// Input "fun" must be static, must have TxChan input parameter.
   void uThreadStart(Function(TxChan) fun, TxChan par) async {
     if (!isRunning) {
       isRunning = true;

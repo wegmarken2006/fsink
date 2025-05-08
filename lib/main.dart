@@ -204,12 +204,11 @@ class Page2 extends StatefulWidget {
 }
 
 class Page2State extends State<Page2> {
-  late (String, List<String>, List<String>) _fromRss;
   String _feedTitle = "";
   List<String> _titles = [];
   List<String> _links = [];
 
-  void initAsync() async {
+  Future<void> initAsync() async {
     uGetFeed("https://hnrss.org/frontpage").then((feed) {
       setState(() {
         _feedTitle = feed.$1;
@@ -236,7 +235,8 @@ class Page2State extends State<Page2> {
       "List",
       uColNoExp([
         uTextNoExp(_feedTitle, 1.8),
-        uListView(context, _titles, _links, fun)]),
+        uRefresh(initAsync, uListViewNoExp(context, _titles, _links, fun)),
+        ]),
     );
   }
 
