@@ -10,6 +10,9 @@ import 'dart:isolate';
 import 'package:webfeed_plus/webfeed_plus.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:external_path/external_path.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 typedef Any = dynamic;
 
 var uCfg = UtilsCfg();
@@ -72,9 +75,9 @@ Widget uPageMenu(
 }
 
 /// Use this Expanded version inside uCol.
-/// 
-/// Example: 
-/// 
+///
+/// Example:
+///
 /// return uPage(
 ///      context,
 ///      "List",
@@ -332,7 +335,25 @@ Thread uThreadInit() {
   return thread;
 }
 
+//import 'package:external_path/external_path.dart';
+//import 'package:permission_handler/permission_handler.dart';
+
+Future<String> uGetPathForImage() async {
+  var fileName = "${DateTime.now()}.png";
+  fileName = fileName.replaceAll(":", "_");
+  fileName = fileName.replaceAll(" ", "");
+
+  await Permission.storage.request();
+  var path = await ExternalPath.getExternalStoragePublicDirectory(
+    ExternalPath.DIRECTORY_DOWNLOAD,
+  );
+  path = "$path/$fileName";
+
+  return path;
+}
+
 //import 'package:url_launcher/url_launcher.dart';
+
 Future<void> uGoToWeb(String address) async {
   Uri url = Uri.parse(address);
 
@@ -342,6 +363,7 @@ Future<void> uGoToWeb(String address) async {
 }
 
 ////import 'package:shared_preferences/shared_preferences.dart';
+///
 int uInitPersistInt(String valName) {
   var value = (uCfg.prefs.getInt(valName) ?? 0);
   return value;
@@ -392,7 +414,7 @@ Widget uCameraPreview() {
   );
 }
 
-/// pass to floatingActionButton, example:
+/// Pass to floatingActionButton, example:
 ///
 ///  return uPage(
 ///      context,
@@ -401,7 +423,7 @@ Widget uCameraPreview() {
 ///      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
 ///    );
 ///
-Future<void> uCameraPicture(BuildContext context) async {
+Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
   try {
     // Ensure that the camera is initialized.
     await uCfg.initializeControllerFuture;
@@ -409,6 +431,11 @@ Future<void> uCameraPicture(BuildContext context) async {
     // Attempt to take a picture and get the file `image`
     // where it was saved.
     final image = await uCfg.controller.takePicture();
+
+    if (save) {
+      final pathToSave = await uGetPathForImage();
+      image.saveTo(pathToSave);
+    }
 
     if (!context.mounted) return;
 

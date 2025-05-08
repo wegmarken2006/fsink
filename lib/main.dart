@@ -1,6 +1,3 @@
-// For persistence:
-// flutter pub add shared_preferences
-
 import 'package:flutter/material.dart';
 
 import 'utils.dart';
@@ -99,8 +96,6 @@ class Page0State extends State<Page0> {
         uCameraPreview(),
         uRow([
           uBtnIcon(() => uCameraPicture(context), Icons.camera_alt),
-          //uBtnIcon(() => uGoToPage(context, Page1()), Icons.arrow_right),
-          //uBtnIcon(() => uGoToPage(context, Page2()), Icons.arrow_right),
         ]),
       ]),
     );
