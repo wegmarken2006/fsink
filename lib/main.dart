@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 import 'utils.dart';
 
@@ -37,9 +38,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+
+  Ls _items = ["buttons", "list", "tabs", "isolate"];
+
   // three dots items
-  var items = ["camera", "buttons", "list", "tabs", "isolate"];
-  void menuFun(String item) {
+  void menuFun(String item) {  
+
     switch (item) {
       case "camera":
         uGoToPage(context, Page0());
@@ -63,11 +68,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isAndroid) {
+      _items.add("camera");
+    } 
+
     return uPageMenu(
       context,
       widget.title,
       uColNoExp([]),
-      uThreeDots(context, items, menuFun),
+      uThreeDots(context, _items, menuFun),
     );
   }
 }
@@ -94,9 +103,7 @@ class Page0State extends State<Page0> {
       "Camera",
       uColNoExp([
         uCameraPreview(),
-        uRow([
-          uBtnIcon(() => uCameraPicture(context), Icons.camera_alt),
-        ]),
+        uRow([uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)]),
       ]),
     );
   }
@@ -112,13 +119,15 @@ class Page1 extends StatefulWidget {
 class Page1State extends State<Page1> {
   int _counter = 0;
   int _valEntered = 0;
+  late DateTime _date;
 
   @override
   initState() {
     super.initState();
 
     _counter = uInitPersistInt("_counter");
-    uInitStateCamera();
+    _date = uInitPersistDate("_date");    
+    _checkDay();
   }
 
   Future<void> _inc(int num) async {
@@ -138,12 +147,25 @@ class Page1State extends State<Page1> {
   }
 
   Future<void> _clear() async {
+    
     setState(() {
       _counter = 0;
     });
     uSetPersistInt("_counter", _counter);
   }
 
+  //clear if new day
+  _checkDay() {
+    var time = DateTime.now();
+    var ts = time.toString();
+    ts = ts.split(" ")[0];
+    var time2 = DateTime.parse(ts);
+    if (time2.isAfter(_date)) {
+      uSetPersistDate("_date", time2);
+      _clear();
+    } 
+
+  }
   @override
   Widget build(BuildContext context) {
     return uPage(
@@ -231,10 +253,9 @@ class Page2State extends State<Page2> {
       uColNoExp([
         uTextNoExp(_feedTitle, 1.8),
         uRefresh(initAsync, uListViewNoExp(context, _titles, _links, fun)),
-        ]),
+      ]),
     );
   }
-
 }
 
 class Page3 extends StatefulWidget {
