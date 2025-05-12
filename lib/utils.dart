@@ -11,9 +11,10 @@ import 'package:webfeed_plus/webfeed_plus.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 typedef Any = dynamic;
+typedef Ls = List<String>;
 
 var uCfg = UtilsCfg();
 
@@ -27,8 +28,10 @@ class UtilsCfg {
   //call in main before runApp:
   // await uCfg.init();
   Future<void> init() async {
-    cameras = await availableCameras();
-    firstCamera = cameras.first;
+    if (Platform.isAndroid) {
+      cameras = await availableCameras();
+      firstCamera = cameras.first;
+    }
 
     prefs = await SharedPreferences.getInstance();
   }
@@ -362,8 +365,8 @@ Future<void> uGoToWeb(String address) async {
   }
 }
 
-////import 'package:shared_preferences/shared_preferences.dart';
-///
+//import 'package:shared_preferences/shared_preferences.dart';
+
 int uInitPersistInt(String valName) {
   var value = (uCfg.prefs.getInt(valName) ?? 0);
   return value;
@@ -376,6 +379,25 @@ int uGetPersistInt(String valName) {
 
 void uSetPersistInt(String valName, int value) {
   uCfg.prefs.setInt(valName, value);
+}
+
+DateTime uInitPersistDate(String valName) {
+  var value = (uCfg.prefs.getString(valName) ?? "1970-01-01");
+  var time = DateTime.parse(value);
+  return time;
+}
+
+DateTime uGetPersistDate(String valName) {
+  var value = (uCfg.prefs.getString(valName) ?? "1970-01-01");
+  var time = DateTime.parse(value);
+  return time;
+}
+
+void uSetPersistDate(String valName, DateTime time) {
+  var dateS = time.toString();
+  dateS = dateS.split(" ")[0];
+  
+  uCfg.prefs.setString(valName, dateS);
 }
 
 //import 'package:camera/camera.dart';
