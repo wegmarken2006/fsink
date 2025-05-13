@@ -1,3 +1,10 @@
+//flutter run -d chrome --dart-define=MY_ENV=web
+//flutter run -d linux --dart-define=MY_ENV=linux
+//flutter run --dart-define=MY_ENV=android
+//flutter build web --dart-define=MY_ENV=web
+//flutter build linux --dart-define=MY_ENV=linux
+//flutter build apk --dart-define=MY_ENV=android
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -18,6 +25,8 @@ typedef Ls = List<String>;
 
 var uCfg = UtilsCfg();
 
+const env = String.fromEnvironment('MY_ENV');
+
 class UtilsCfg {
   late List<CameraDescription> cameras;
   late CameraDescription firstCamera;
@@ -28,7 +37,10 @@ class UtilsCfg {
   //call in main before runApp:
   // await uCfg.init();
   Future<void> init() async {
-    if (Platform.isAndroid) {
+
+
+    if (env != "linux") {
+    /* if (Platform.isAndroid) { */
       cameras = await availableCameras();
       firstCamera = cameras.first;
     }

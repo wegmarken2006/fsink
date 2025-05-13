@@ -68,9 +68,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isAndroid) {
+    if (env != "linux") {
+    /* if (Platform.isAndroid) { */
       _items.add("camera");
-    } 
+    }
 
     return uPageMenu(
       context,
