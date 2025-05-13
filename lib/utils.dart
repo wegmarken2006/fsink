@@ -55,6 +55,10 @@ Future<void> uGoToPage(BuildContext context, Widget page) async {
   ).push(MaterialPageRoute(builder: (context) => page));
 }
 
+Widget uFlex(Widget content) {  
+  return Flexible(child: content);
+}
+
 Widget uPage(
   BuildContext context,
   String title,
@@ -196,7 +200,7 @@ Widget uTabs(List<String> names, List<Widget> pages) {
 }
 
 Widget uBtnIcon(Function() fun, [IconData? icon]) {
-  return FloatingActionButton(onPressed: fun, child: Icon(icon));
+  return uFlex(FloatingActionButton(onPressed: fun, child: Icon(icon)));
 }
 
 Widget uBtnText(
@@ -206,7 +210,7 @@ Widget uBtnText(
   Color? fCol = Colors.white,
   bool enabled = true,
 }) {
-  return ElevatedButton(
+  return uFlex(ElevatedButton(
     onPressed: enabled ? fun : null,
     style: ElevatedButton.styleFrom(
       minimumSize: Size.square(60.0),
@@ -215,7 +219,7 @@ Widget uBtnText(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
     ),
     child: Text(text),
-  );
+  ));
 }
 
 Widget uCol(List<Widget> items) {
