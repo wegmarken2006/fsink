@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (env != "linux") {
+    if (env != linux) {
     /* if (Platform.isAndroid) { */
       _items.add("camera");
     }

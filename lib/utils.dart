@@ -5,6 +5,7 @@
 //flutter build linux --dart-define=MY_ENV=linux
 //flutter build apk --dart-define=MY_ENV=android
 
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -19,6 +20,11 @@ import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
 //import 'package:permission_handler/permission_handler.dart';
+
+
+const android = "android";
+const linux = "linux";
+const web = "web";
 
 typedef Any = dynamic;
 typedef Ls = List<String>;
@@ -37,10 +43,10 @@ class UtilsCfg {
   //call in main before runApp:
   // await uCfg.init();
   Future<void> init() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-
-    if (env != "linux") {
-    /* if (Platform.isAndroid) { */
+    if (env != linux) {
+      /* if (Platform.isAndroid) { */
       cameras = await availableCameras();
       firstCamera = cameras.first;
     }
@@ -55,7 +61,7 @@ Future<void> uGoToPage(BuildContext context, Widget page) async {
   ).push(MaterialPageRoute(builder: (context) => page));
 }
 
-Widget uFlex(Widget content) {  
+Widget uFlex(Widget content) {
   return Flexible(child: content);
 }
 
@@ -210,16 +216,20 @@ Widget uBtnText(
   Color? fCol = Colors.white,
   bool enabled = true,
 }) {
-  return uFlex(ElevatedButton(
-    onPressed: enabled ? fun : null,
-    style: ElevatedButton.styleFrom(
-      minimumSize: Size.square(60.0),
-      backgroundColor: bCol,
-      foregroundColor: fCol,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+  return uFlex(
+    ElevatedButton(
+      onPressed: enabled ? fun : null,
+      style: ElevatedButton.styleFrom(
+        minimumSize: Size.square(60.0),
+        backgroundColor: bCol,
+        foregroundColor: fCol,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: Text(text),
     ),
-    child: Text(text),
-  ));
+  );
 }
 
 Widget uCol(List<Widget> items) {
@@ -362,13 +372,39 @@ Future<String> uGetPathForImageSave() async {
   fileName = fileName.replaceAll(":", "_");
   fileName = fileName.replaceAll(" ", "");
 
-  //await Permission.storage.request(); //what is the function of this? I can write also without.
-  var path = await ExternalPath.getExternalStoragePublicDirectory(
-    ExternalPath.DIRECTORY_DOWNLOAD,
-  );
+  var path = "";
+  if (env == android) {
+    //await Permission.storage.request(); //what is the function of this? I can write also without.
+    path = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOWNLOAD,
+    );
+  } 
+
   path = "$path/$fileName";
 
   return path;
+}
+
+Future<void> uWriteToFile(String fileName, String toWrite) async {
+  fileName = fileName.replaceAll(":", "_");
+  fileName = fileName.replaceAll(" ", "");
+
+  var path = "";
+  if (env == android) {
+    //await Permission.storage.request(); //what is the function of this? I can write also without.
+    path = await ExternalPath.getExternalStoragePublicDirectory(
+      ExternalPath.DIRECTORY_DOWNLOAD,
+    );
+  } else if (env == linux) {
+    var current = Directory.current;
+    path = current.toString();
+  }
+
+  path = "$path/$fileName";
+  path = path.replaceAll("'", "");
+
+  var file = File(path);
+  file.writeAsString(toWrite);
 }
 
 //import 'package:url_launcher/url_launcher.dart';
@@ -412,7 +448,7 @@ DateTime uGetPersistDate(String valName) {
 void uSetPersistDate(String valName, DateTime time) {
   var dateS = time.toString();
   dateS = dateS.split(" ")[0];
-  
+
   uCfg.prefs.setString(valName, dateS);
 }
 
@@ -471,8 +507,9 @@ Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
     // where it was saved.
     final image = await uCfg.controller.takePicture();
 
-    if (save) {
-      final pathToSave = await uGetPathForImageSave();
+    var pathToSave = "";
+    if (save || env != android) {
+      pathToSave = await uGetPathForImageSave();
       image.saveTo(pathToSave);
     }
 
@@ -486,6 +523,7 @@ Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
               // Pass the automatically generated path to
               // the DisplayPictureScreen widget.
               imagePath: image.path,
+              pathToSave: pathToSave,
             ),
       ),
     );
@@ -497,17 +535,25 @@ Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
 
 class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
+  final String pathToSave;
 
-  const DisplayPictureScreen({super.key, required this.imagePath});
+  const DisplayPictureScreen({super.key, required this.imagePath, required this.pathToSave});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
-    );
+    if (env == android) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Display the Picture')),
+        // The image is stored as a file on the device. Use the `Image.file`
+        // constructor with the given path to display the image.
+        body: Image.file(File(imagePath)),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Display the Picture')),
+        body: Image.asset(pathToSave),
+      );
+    }
   }
 }
 
