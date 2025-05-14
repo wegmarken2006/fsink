@@ -5,6 +5,8 @@
 //flutter build linux --dart-define=MY_ENV=linux
 //flutter build apk --dart-define=MY_ENV=android
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -18,7 +20,9 @@ import 'package:webfeed_plus/webfeed_plus.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
-//import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import 'package:csv/csv.dart';
 
 const android = "android";
 const linux = "linux";
@@ -29,7 +33,8 @@ typedef Ls = List<String>;
 
 var uCfg = UtilsCfg();
 
-const env = String.fromEnvironment('MY_ENV');
+const env =
+    bool.hasEnvironment("MY_ENV") ? String.fromEnvironment("MY_ENV") : android;
 
 class UtilsCfg {
   late List<CameraDescription> cameras;
@@ -112,6 +117,63 @@ void uAlert(
       );
     },
   );
+}
+
+/// First row in table is supposed to be columns names
+Widget uTable(List<List<Any>> table) {
+  List<DataColumn> dCols = [];
+  List<DataRow> dRows = [];
+
+  if (table.isNotEmpty) {
+    for (var element in table[0]) {
+      dCols.add(DataColumn(label: Text(element)));
+    }
+    for (var i = 1; i < table.length; i++) {
+      var row = table[i];
+
+      List<DataCell> dCells = [];
+      for (var element in row) {
+        dCells.add(DataCell(Text(element)));
+      }
+      dRows.add(DataRow(cells: dCells));
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: DataTable(columns: dCols, rows: dRows),
+    );
+  } else {
+    return const Center(child: CircularProgressIndicator());
+  }
+}
+
+Future<List<List<Any>>> uReadCsv(String fileName) async {
+  var path = await uGetFileFullPath(fileName);
+  final input = File(path).openRead();
+  final listData =
+      await input
+          .transform(utf8.decoder)
+          .transform(CsvToListConverter())
+          .toList();
+
+  //var rData = await uReadFromFile(fileName);
+  //var file = File(path);
+  //var rData = file.readAsStringSync();
+
+  /*
+  List<List<Any>> listData =
+      CsvToListConverter(
+        fieldDelimiter: ",",
+        eol: "\n",
+        shouldParseNumbers: false,
+      ).convert(rData).toList();
+      */
+  return listData;
+}
+
+Future<void> uWriteCsv(String fileName, List<List<Any>> toWrite) async {
+  var res = ListToCsvConverter().convert(toWrite);
+
+  await uWriteToFile(fileName, res);
 }
 
 Widget uPageMenu(
@@ -407,7 +469,7 @@ Future<String> uGetPathForImageSave() async {
 
   var path = "";
   if (env == android) {
-    //await Permission.storage.request(); //what is the function of this? I can write also without.
+    await Permission.storage.request();
     path = await ExternalPath.getExternalStoragePublicDirectory(
       ExternalPath.DIRECTORY_DOWNLOAD,
     );
@@ -419,12 +481,19 @@ Future<String> uGetPathForImageSave() async {
 }
 
 Future<void> uWriteToFile(String fileName, String toWrite) async {
+  var path = await uGetFileFullPath(fileName);
+  var file = await File(path);
+
+  file.writeAsString(toWrite);
+}
+
+Future<String> uGetFileFullPath(String fileName) async {
   fileName = fileName.replaceAll(":", "_");
   fileName = fileName.replaceAll(" ", "");
 
   var path = "";
   if (env == android) {
-    //await Permission.storage.request(); //what is the function of this? I can write also without.
+    await Permission.storage.request();
     path = await ExternalPath.getExternalStoragePublicDirectory(
       ExternalPath.DIRECTORY_DOWNLOAD,
     );
@@ -436,8 +505,16 @@ Future<void> uWriteToFile(String fileName, String toWrite) async {
   path = "$path/$fileName";
   path = path.replaceAll("'", "");
 
+  return path;
+}
+
+Future<String> uReadFromFile(String fileName) async {
+  var path = await uGetFileFullPath(fileName);
   var file = File(path);
-  file.writeAsString(toWrite);
+  
+  var str = await file.readAsString();
+
+  return str;
 }
 
 //import 'package:url_launcher/url_launcher.dart';

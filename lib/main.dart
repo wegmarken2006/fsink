@@ -38,13 +38,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-
-  Ls _items = ["buttons", "list", "tabs", "isolate"];
+  Ls _items = ["buttons", "list", "tabs", "isolate", "table"];
 
   // three dots items
-  void menuFun(String item) {  
-
+  void menuFun(String item) {
     switch (item) {
       case "camera":
         uGoToPage(context, Page0());
@@ -61,6 +58,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case "isolate":
         uGoToPage(context, Page4());
         break;
+      case "table":
+        uGoToPage(context, Page5());
+        break;
 
       default:
     }
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (env != linux) {
-    /* if (Platform.isAndroid) { */
+      /* if (Platform.isAndroid) { */
       _items.add("camera");
     }
 
@@ -127,7 +127,7 @@ class Page1State extends State<Page1> {
     super.initState();
 
     _counter = uInitPersistInt("_counter");
-    _date = uInitPersistDate("_date");    
+    _date = uInitPersistDate("_date");
     _checkDay();
   }
 
@@ -148,7 +148,6 @@ class Page1State extends State<Page1> {
   }
 
   Future<void> _clear() async {
-    
     setState(() {
       _counter = 0;
     });
@@ -164,9 +163,9 @@ class Page1State extends State<Page1> {
     if (time2.isAfter(_date)) {
       uSetPersistDate("_date", time2);
       _clear();
-    } 
-
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return uPage(
@@ -208,7 +207,12 @@ class Page1State extends State<Page1> {
         uRow([
           uText('clear'),
           //uCol([uBtnText(_clear, "Clear")]),
-          uCol([uBtnText( () => uAlert(context, "Confirm", "Are you sure", _clear), "Clear")]),
+          uCol([
+            uBtnText(
+              () => uAlert(context, "Confirm", "Are you sure", _clear),
+              "Clear",
+            ),
+          ]),
         ]),
       ]),
     );
@@ -359,6 +363,42 @@ class Page4State extends State<Page4> {
           enabled: _btnEnabled,
         ),
       ]),
+    );
+  }
+}
+
+class Page5 extends StatefulWidget {
+  const Page5({super.key});
+
+  @override
+  State<Page5> createState() => Page5State();
+}
+
+class Page5State extends State<Page5> {
+  List<List<Any>> _ll = [];
+  var sList = [["col1", "col2", "col3"], ["aaa", "bbb", "ccc"], ["aaa", "bbb", "ccc"]];
+
+  @override
+  initState() {
+    super.initState();
+    initAsync();
+  }
+
+  void initAsync() async {
+    await uWriteCsv("temp2.csv", sList);
+    var ll = await uReadCsv("temp2.csv");
+    setState(() {
+          _ll = ll;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "Table",
+      //uTable(sList));
+      uTable(_ll),
     );
   }
 }
