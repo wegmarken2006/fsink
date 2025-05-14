@@ -1,0 +1,303 @@
+import 'package:flutter/material.dart';
+import 'dart:io';
+
+import 'utils.dart';
+
+Future<void> main() async {
+  await uCfg.init();
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fsink',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 4, 59, 29),
+        ),
+      ),
+      home: const MyHomePage(title: 'Fsink'),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  Ls _items = ["water", "pup"];
+
+  // three dots items
+  void menuFun(String item) {
+    switch (item) {
+      case "water":
+        uGoToPage(context, Page1());
+        break;
+      case "pup":
+        uGoToPage(context, Page5());
+        break;
+
+      default:
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPageMenu(
+      context,
+      widget.title,
+      uColNoExp([]),
+      uThreeDots(context, _items, menuFun),
+    );
+  }
+}
+
+class Page1 extends StatefulWidget {
+  const Page1({super.key});
+
+  @override
+  State<Page1> createState() => Page1State();
+}
+
+class Page1State extends State<Page1> {
+  int _counter = 0;
+  int _valEntered = 0;
+  late DateTime _date;
+
+  @override
+  initState() {
+    super.initState();
+
+    _counter = uInitPersistInt("_counter");
+    _date = uInitPersistDate("_date");
+    _valEntered = uInitPersistInt("_valEntered");
+    _checkDay();
+  }
+
+  Future<void> _inc(int num) async {
+    _counter = uGetPersistInt("_counter");
+    setState(() {
+      _counter = _counter + num;
+    });
+    uSetPersistInt("_counter", _counter);
+  }
+
+  Future<void> _saveValEntered() async {
+    uSetPersistInt("_valEntered", _valEntered);
+  }
+
+  Future<void> _dec(int num) async {
+    _counter = uGetPersistInt("_counter");
+    setState(() {
+      _counter = _counter - num;
+    });
+    uSetPersistInt("_counter", _counter);
+  }
+
+  Future<void> _clear() async {
+    setState(() {
+      _counter = 0;
+    });
+    uSetPersistInt("_counter", _counter);
+  }
+
+  //clear if new day
+  _checkDay() {
+    var time = DateTime.now();
+    var ts = time.toString();
+    ts = ts.split(" ")[0];
+    var time2 = DateTime.parse(ts);
+    if (time2.isAfter(_date)) {
+      uSetPersistDate("_date", time2);
+      _clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "Water",
+      uColNoExp([
+        uTextNoExp('Daily cl:', 1.5),
+        uTextNoExp('$_counter', 3.0),
+
+        uRow([
+          uText('33'),
+          uCol([
+            uBtnIcon(() => _inc(33), Icons.add),
+            uBtnIcon(() => _dec(33), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uText('50'),
+          uCol([
+            uBtnIcon(() => _inc(50), Icons.add),
+            uBtnIcon(() => _dec(50), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uInput(_valEntered.toString(), (text) {
+            setState(() {
+              _valEntered = int.tryParse(text) ?? 0;
+            });
+            _saveValEntered();
+          }),
+          uCol([
+            uBtnIcon(() => _inc(_valEntered), Icons.add),
+            uBtnIcon(() => _dec(_valEntered), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uText('clear'),
+          uCol([uBtnText(_clear, "Clear")]),
+        ]),
+      ]),
+    );
+  }
+}
+
+class Page5 extends StatefulWidget {
+  const Page5({super.key});
+
+  @override
+  State<Page5> createState() => Page5State();
+}
+
+
+class Page5State extends State<Page5> {
+  int _counter = 0;
+  int _total = 0;
+  int _totalDays = 0;
+  int _valEntered = 0;
+  bool _newDay = false;
+  late DateTime _date;
+
+  @override
+  initState() {
+    super.initState();
+
+    _counter = uInitPersistInt("_counterP");
+    _total = uInitPersistInt("_total");
+    _date = uInitPersistDate("_dateP");
+    _valEntered = uInitPersistInt("_valEnteredP");
+    _totalDays = uInitPersistInt("_totalDays");
+    _checkDay();
+  }
+
+  Future<void> _saveValEntered() async {
+    uSetPersistInt("_valEnteredP", _valEntered);
+  }
+
+  Future<void> _inc(int num) async {
+    _counter = uGetPersistInt("_counterP");
+    _total = uGetPersistInt("_total");
+    _totalDays = uInitPersistInt("_totalDays");
+    setState(() {
+      _counter = _counter + num;
+      _total = _total + num;
+      if (_newDay) {
+        // increment once per day
+        _totalDays = _totalDays + 1;
+        _newDay = false;
+      }
+    });
+    uSetPersistInt("_counterP", _counter);
+    uSetPersistInt("_total", _total);
+    uSetPersistInt("_totalDays", _totalDays);
+  }
+
+  Future<void> _dec(int num) async {
+    _counter = uGetPersistInt("_counterP");
+    _total = uGetPersistInt("_total");
+    setState(() {
+      _counter = _counter - num;
+      _total = _total - num;
+    });
+    uSetPersistInt("_counterP", _counter);
+    uSetPersistInt("_total", _total);
+  }
+
+  Future<void> _clear() async {
+    setState(() {
+      _counter = 0;
+    });
+    uSetPersistInt("_counterP", _counter);
+  }
+
+  //clear if new day
+  _checkDay() {
+    var time = DateTime.now();
+    var ts = time.toString();
+    ts = ts.split(" ")[0];
+    var time2 = DateTime.parse(ts);
+    if (time2.isAfter(_date)) {
+      _newDay = true;
+      uSetPersistDate("_dateP", time2);
+      _clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "P-up",
+      uColNoExp([
+        uTextNoExp('Daily, Total, Total Days:', 1.5),
+        uTextNoExp('$_counter', 2.5),
+        uTextNoExp('$_total in $_totalDays days', 3.0),
+
+        uRow([
+          uText('30'),
+          uCol([
+            uBtnIcon(() => _inc(30), Icons.add),
+            uBtnIcon(() => _dec(30), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uText('40'),
+          uCol([
+            uBtnIcon(() => _inc(40), Icons.add),
+            uBtnIcon(() => _dec(40), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uInput(_valEntered.toString(), (text) {
+            setState(() {
+              _valEntered = int.tryParse(text) ?? 0;
+            });
+            _saveValEntered();
+          }),
+          uCol([
+            uBtnIcon(() => _inc(_valEntered), Icons.add),
+            uBtnIcon(() => _dec(_valEntered), Icons.remove),
+          ]),
+        ]),
+        uRow([]),
+        uRow([
+          uText('clear'),
+          uCol([uBtnText(_clear, "Clear")]),
+        ]),
+      ]),
+    );
+  }
+}
