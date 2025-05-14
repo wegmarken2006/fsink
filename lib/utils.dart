@@ -407,7 +407,6 @@ Future<void> uWriteCsv(String fileName, List<List<Any>> toWrite) async {
   await uWriteToFile(fileName, res);
 }
 
-
 //import 'dart:isolate';
 
 typedef TxChan = SendPort;
@@ -484,11 +483,20 @@ Future<String> uGetPathForImageSave() async {
   return path;
 }
 
-Future<void> uWriteToFile(String fileName, String toWrite) async {
+Future<void> uWriteToFile(
+  String fileName,
+  String toWrite, {
+  bool append = true,
+}) async {
   var path = await uGetFileFullPath(fileName);
-  var file = await File(path);
+  var file = File(path);
 
-  file.writeAsString(toWrite);
+  if (append) {
+    toWrite = "\r\n$toWrite";
+    file.writeAsString(toWrite, mode: FileMode.append);
+  } else {
+    file.writeAsString(toWrite);
+  }
 }
 
 Future<String> uGetFileFullPath(String fileName) async {
@@ -518,7 +526,7 @@ Future<String> uGetFileFullPath(String fileName) async {
 Future<String> uReadFromFile(String fileName) async {
   var path = await uGetFileFullPath(fileName);
   var file = File(path);
-  
+
   var str = await file.readAsString();
 
   return str;
