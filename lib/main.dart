@@ -207,7 +207,8 @@ class Page1State extends State<Page1> {
         uRow([]),
         uRow([
           uText('clear'),
-          uCol([uBtnText(_clear, "Clear")]),
+          //uCol([uBtnText(_clear, "Clear")]),
+          uCol([uBtnText( () => uAlert(context, "Confirm", "Are you sure", _clear), "Clear")]),
         ]),
       ]),
     );

@@ -5,7 +5,6 @@
 //flutter build linux --dart-define=MY_ENV=linux
 //flutter build apk --dart-define=MY_ENV=android
 
-
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -20,7 +19,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
 //import 'package:permission_handler/permission_handler.dart';
-
 
 const android = "android";
 const linux = "linux";
@@ -78,6 +76,41 @@ Widget uPage(
     ),
     body: Center(child: content),
     floatingActionButton: fButton,
+  );
+}
+
+void uAlert(
+  BuildContext context,
+  String title,
+  String content,
+  Function onYes,
+) {
+  showDialog(
+    context: context,
+    builder: (BuildContext ctx) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          // The "Yes" button
+          TextButton(
+            onPressed: () {
+              onYes();
+              // Close the dialog
+              Navigator.of(context).pop();
+            },
+            child: const Text('Yes'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Close the dialog
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+        ],
+      );
+    },
   );
 }
 
@@ -378,7 +411,7 @@ Future<String> uGetPathForImageSave() async {
     path = await ExternalPath.getExternalStoragePublicDirectory(
       ExternalPath.DIRECTORY_DOWNLOAD,
     );
-  } 
+  }
 
   path = "$path/$fileName";
 
@@ -537,7 +570,11 @@ class DisplayPictureScreen extends StatelessWidget {
   final String imagePath;
   final String pathToSave;
 
-  const DisplayPictureScreen({super.key, required this.imagePath, required this.pathToSave});
+  const DisplayPictureScreen({
+    super.key,
+    required this.imagePath,
+    required this.pathToSave,
+  });
 
   @override
   Widget build(BuildContext context) {
