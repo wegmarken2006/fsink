@@ -21,6 +21,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:csv/csv.dart';
 
@@ -144,36 +145,6 @@ Widget uTable(List<List<Any>> table) {
   } else {
     return const Center(child: CircularProgressIndicator());
   }
-}
-
-Future<List<List<Any>>> uReadCsv(String fileName) async {
-  var path = await uGetFileFullPath(fileName);
-  final input = File(path).openRead();
-  final listData =
-      await input
-          .transform(utf8.decoder)
-          .transform(CsvToListConverter())
-          .toList();
-
-  //var rData = await uReadFromFile(fileName);
-  //var file = File(path);
-  //var rData = file.readAsStringSync();
-
-  /*
-  List<List<Any>> listData =
-      CsvToListConverter(
-        fieldDelimiter: ",",
-        eol: "\n",
-        shouldParseNumbers: false,
-      ).convert(rData).toList();
-      */
-  return listData;
-}
-
-Future<void> uWriteCsv(String fileName, List<List<Any>> toWrite) async {
-  var res = ListToCsvConverter().convert(toWrite);
-
-  await uWriteToFile(fileName, res);
 }
 
 Widget uPageMenu(
@@ -404,6 +375,39 @@ void uSleepS(int seconds) {
   sleep(duration);
 }
 
+//import 'package:csv/csv.dart';
+
+Future<List<List<Any>>> uReadCsv(String fileName) async {
+  var path = await uGetFileFullPath(fileName);
+  final input = File(path).openRead();
+  final listData =
+      await input
+          .transform(utf8.decoder)
+          .transform(CsvToListConverter())
+          .toList();
+
+  //var rData = await uReadFromFile(fileName);
+  //var file = File(path);
+  //var rData = file.readAsStringSync();
+
+  /*
+  List<List<Any>> listData =
+      CsvToListConverter(
+        fieldDelimiter: ",",
+        eol: "\n",
+        shouldParseNumbers: false,
+      ).convert(rData).toList();
+      */
+  return listData;
+}
+
+Future<void> uWriteCsv(String fileName, List<List<Any>> toWrite) async {
+  var res = ListToCsvConverter().convert(toWrite);
+
+  await uWriteToFile(fileName, res);
+}
+
+
 //import 'dart:isolate';
 
 typedef TxChan = SendPort;
@@ -498,6 +502,9 @@ Future<String> uGetFileFullPath(String fileName) async {
       ExternalPath.DIRECTORY_DOWNLOAD,
     );
   } else if (env == linux) {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    path = directory.path;
+  } else {
     var current = Directory.current;
     path = current.toString();
   }
