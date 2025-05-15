@@ -428,10 +428,7 @@ class Page6State extends State<Page6> {
   }
 
   void initAsync() async {
-    try {
     uInitNotes();
-    } catch(e) {}
-
   }
 
   @override

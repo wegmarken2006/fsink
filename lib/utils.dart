@@ -608,12 +608,17 @@ Future<String> uGetFileFullPath(String fileName) async {
 }
 
 Future<String> uReadFromFile(String fileName) async {
+  try {
   var path = await uGetFileFullPath(fileName);
   var file = File(path);
 
   var str = await file.readAsString();
 
   return str;
+  } catch(e) {
+    return "";
+  }
+
 }
 
 //import 'package:url_launcher/url_launcher.dart';
