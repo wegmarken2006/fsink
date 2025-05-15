@@ -38,7 +38,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Ls _items = ["buttons", "list", "tabs", "isolate", "table"];
+  Ls _items = ["buttons", "list", "tabs", "isolate", "table", "edit"];
 
   // three dots items
   void menuFun(String item) {
@@ -61,6 +61,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case "table":
         uGoToPage(context, Page5());
         break;
+      case "edit":
+        uGoToPage(context, Page6());
+        break;
 
       default:
     }
@@ -70,7 +73,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     if (env != linux) {
       /* if (Platform.isAndroid) { */
-      _items.add("camera");
+      if (! _items.contains("camera")) {
+        _items.add("camera");
+      }
     }
 
     return uPageMenu(
@@ -376,7 +381,11 @@ class Page5 extends StatefulWidget {
 
 class Page5State extends State<Page5> {
   List<List<Any>> _ll = [];
-  var sList = [["col1", "col2", "col3"], ["aaa", "bbb", "ccc"], ["aaa", "bbb", "ccc"]];
+  var sList = [
+    ["col1", "col2", "col3"],
+    ["aaa", "bbb", "ccc"],
+    ["aaa", "bbb", "ccc"],
+  ];
 
   @override
   initState() {
@@ -388,7 +397,7 @@ class Page5State extends State<Page5> {
     await uWriteCsv("temp2.csv", sList);
     var ll = await uReadCsv("temp2.csv");
     setState(() {
-          _ll = ll;
+      _ll = ll;
     });
   }
 
@@ -399,6 +408,41 @@ class Page5State extends State<Page5> {
       "Table",
       //uTable(sList));
       uTable(_ll),
+    );
+  }
+}
+
+class Page6 extends StatefulWidget {
+  const Page6({super.key});
+
+  @override
+  State<Page6> createState() => Page6State();
+}
+
+class Page6State extends State<Page6> {
+
+  @override
+  initState() {
+    super.initState();
+    initAsync();
+  }
+
+  void initAsync() async {
+    try {
+    uInitNotes();
+    } catch(e) {}
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "Edit",
+      //uColNoExp([
+        uNotes(),
+        //uBtnIcon(() => uWriteToFile("notes.txt", uNotesGet(), append: false), Icons.add),
+      //]),
     );
   }
 }

@@ -42,7 +42,12 @@ class UtilsCfg {
   late CameraDescription firstCamera;
   late CameraController controller;
   late Future<void> initializeControllerFuture;
+
   late SharedPreferences prefs;
+
+  var noteController = TextEditingController();
+  String noteText = "";
+  String noteFileName = "notes.txt";
 
   //call in main before runApp:
   // await uCfg.init();
@@ -338,16 +343,95 @@ Widget uTextNoExp(String text, [double sizeMul = 1.0]) {
   );
 }
 
-Widget uInput(String text, Function(String) fun) {
+/// Call inside initState() {}
+void uInitNotes() async {
+  uCfg.noteFileName = uGetPersistString("noteFile");
+  uCfg.noteController.text = await uReadFromFile(uCfg.noteFileName);
+}
+
+void uNotesRefresh() async {
+  uCfg.noteController.text = await uReadFromFile(uCfg.noteFileName);
+}
+
+Widget uNotes() {
+  return Scaffold(
+    appBar: AppBar(
+      toolbarHeight: 80.0,
+      title: const Text('Notes'),
+      actions: [
+        uInput(uCfg.noteFileName, (txt) {
+          uCfg.noteFileName = txt;
+          uSetPersistString("noteFile", txt);
+          uNotesRefresh();
+        }),
+        uBtnIcon(
+          () => uWriteToFile(uCfg.noteFileName, uNotesGet(), append: false),
+          Icons.save,
+        ),
+      ],
+    ),
+    body: SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: //uExp(
+          TextField(
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          fillColor: Colors.blueGrey,
+          filled: true,
+        ),
+        controller: uCfg.noteController,
+        keyboardType: TextInputType.multiline,
+        maxLines: 50,
+        //),
+      ),
+    ),
+  );
+
+  /*
+  return uExp(
+      SizedBox(
+        child: TextField(
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            fillColor: Colors.black,
+            filled: true,
+          ),
+          controller: uCfg.noteController,
+          keyboardType: TextInputType.multiline,
+          maxLines: 100,
+        ),
+      ),
+    );
+    */
+}
+
+String uNotesGet() {
+  return uCfg.noteController.text;
+}
+
+/// option parameter nulti: true for multiline input
+Widget uInput(
+  String label,
+  Function(String) fun, {
+  String text = "",
+  bool multi = false,
+}) {
   return uExp(
     SizedBox(
       width: 200,
       child: TextField(
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
-          labelText: text,
+          labelText: label,
         ),
+        /*
         onChanged: (text) {
+          fun(text);
+        },
+        */
+        onSubmitted: (text) {
           fun(text);
         },
       ),
@@ -575,6 +659,15 @@ void uSetPersistDate(String valName, DateTime time) {
   dateS = dateS.split(" ")[0];
 
   uCfg.prefs.setString(valName, dateS);
+}
+
+String uGetPersistString(String valName) {
+  var value = (uCfg.prefs.getString(valName) ?? "");
+  return value;
+}
+
+void uSetPersistString(String valName, String value) {
+  uCfg.prefs.setString(valName, value);
 }
 
 //import 'package:camera/camera.dart';
