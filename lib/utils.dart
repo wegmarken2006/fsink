@@ -361,7 +361,11 @@ Widget uNotes() {
       toolbarHeight: 80.0,
       title: const Text('Notes'),
       actions: [
-        uInput(uCfg.noteFileName, (txt) {
+        uInput(uCfg.noteFileName, 
+        (txt) {
+          uCfg.noteFileName = txt;
+        },
+        funOnSubmit: (txt) {
           uCfg.noteFileName = txt;
           uSetPersistString("noteFile", txt);
           uNotesRefresh();
@@ -416,7 +420,8 @@ String uNotesGet() {
 /// option parameter nulti: true for multiline input
 Widget uInput(
   String label,
-  Function(String) fun, {
+  Function(String) funOnChange, {
+  Function(String)? funOnSubmit,
   String text = "",
   bool multi = false,
 }) {
@@ -428,13 +433,11 @@ Widget uInput(
           border: const OutlineInputBorder(),
           labelText: label,
         ),
-        /*
         onChanged: (text) {
-          fun(text);
+          funOnChange(text);
         },
-        */
         onSubmitted: (text) {
-          fun(text);
+          funOnSubmit!(text);
         },
       ),
     ),
@@ -595,7 +598,7 @@ Future<String> uGetFileFullPath(String fileName) async {
     path = await ExternalPath.getExternalStoragePublicDirectory(
       ExternalPath.DIRECTORY_DOWNLOAD,
     );
-  } else if (env == linux) {
+  } else if ((env == linux) || (env == windows)) {
     final Directory directory = await getApplicationDocumentsDirectory();
     path = directory.path;
   } else {
