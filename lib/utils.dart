@@ -1,5 +1,6 @@
 //flutter run -d chrome --dart-define=MY_ENV=web
 //flutter run -d linux --dart-define=MY_ENV=linux
+//flutter run -d windows --dart-define=MY_ENV=windows
 //flutter run --dart-define=MY_ENV=android
 //flutter build web --dart-define=MY_ENV=web
 //flutter build linux --dart-define=MY_ENV=linux
@@ -28,6 +29,7 @@ import 'package:csv/csv.dart';
 const android = "android";
 const linux = "linux";
 const web = "web";
+const windows = "windows";
 
 typedef Any = dynamic;
 typedef Ls = List<String>;
@@ -54,7 +56,7 @@ class UtilsCfg {
   Future<void> init() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    if (env != linux) {
+    if ((env != linux) && (env != windows)) {
       /* if (Platform.isAndroid) { */
       cameras = await availableCameras();
       firstCamera = cameras.first;
@@ -601,7 +603,12 @@ Future<String> uGetFileFullPath(String fileName) async {
     path = current.toString();
   }
 
-  path = "$path/$fileName";
+  if (env == windows) {
+    path = "$path\\$fileName";
+  } else {
+    path = "$path/$fileName";
+  }
+
   path = path.replaceAll("'", "");
 
   return path;
@@ -609,16 +616,15 @@ Future<String> uGetFileFullPath(String fileName) async {
 
 Future<String> uReadFromFile(String fileName) async {
   try {
-  var path = await uGetFileFullPath(fileName);
-  var file = File(path);
+    var path = await uGetFileFullPath(fileName);
+    var file = File(path);
 
-  var str = await file.readAsString();
+    var str = await file.readAsString();
 
-  return str;
-  } catch(e) {
+    return str;
+  } catch (e) {
     return "";
   }
-
 }
 
 //import 'package:url_launcher/url_launcher.dart';
