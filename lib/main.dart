@@ -471,10 +471,12 @@ class Page7State extends State<Page7> {
     return uPage(
       context,
       "Chart",
-      //uColNoExp([
-        uChartLine([1.0, 2.0, 3.0, 4.0], [[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]], "xTitle", "yTitle")
+      uColNoExp([
+        uChartLine([1.0, 2.0, 3.0, 4.0], [[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]], "xTitle", "yTitle"),
+        uChartLine([1.0, 2.0, 3.0, 4.0], [[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]], "xTitle", "yTitle"),
+        uChartBar([], [], "xTitle", "yTitle"),
         //uBtnIcon(() => uWriteToFile("notes.txt", uNotesGet(), append: false), Icons.add),
-      //]),
+      ]),
     );
   }
 }

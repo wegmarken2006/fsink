@@ -866,12 +866,42 @@ Widget uChartLine(
     }
     llbd.add(LineChartBarData(spots: spots));
   }
-  return LineChart(
-    LineChartData(
-      lineBarsData: llbd,
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
-        bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
+  return uFlex(
+    LineChart(
+      LineChartData(
+        lineBarsData: llbd,
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
+          bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget uChartBar(
+  List<String> x,
+  List<List<double>> y,
+  String xTitle,
+  String yTitle,
+) {
+  List<BarChartGroupData> lbc = [];
+  for (var i = 0; i < y.length; i++) {
+    //BarChartRodData bcrd;
+    for (var j = 0; j < x.length; j++) {
+      //bcrd = BarChartRodData(toY: y[i][j] );
+      //bc = BarChartGroupData(x: x[j], barRods: bcrd)
+    }
+  }
+
+  return uFlex(
+    BarChart(
+      BarChartData(
+        barGroups: lbc,
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
+          bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
+        ),
       ),
     ),
   );
