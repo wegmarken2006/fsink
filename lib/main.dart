@@ -38,7 +38,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Ls _items = ["buttons", "list", "tabs", "isolate", "table", "edit"];
+  Ls _items = ["buttons", "list", "tabs", "isolate", "table", "edit", "chart"];
 
   // three dots items
   void menuFun(String item) {
@@ -63,6 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case "edit":
         uGoToPage(context, Page6());
+        break;
+      case "chart":
+        uGoToPage(context, Page7());
         break;
 
       default:
@@ -438,6 +441,38 @@ class Page6State extends State<Page6> {
       "Edit",
       //uColNoExp([
         uNotes(),
+        //uBtnIcon(() => uWriteToFile("notes.txt", uNotesGet(), append: false), Icons.add),
+      //]),
+    );
+  }
+}
+
+class Page7 extends StatefulWidget {
+  const Page7({super.key});
+
+  @override
+  State<Page7> createState() => Page7State();
+}
+
+class Page7State extends State<Page7> {
+
+  @override
+  initState() {
+    super.initState();
+    initAsync();
+  }
+
+  void initAsync() async {
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "Chart",
+      //uColNoExp([
+        uChartLine([1.0, 2.0, 3.0, 4.0], [[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]], "xTitle", "yTitle")
         //uBtnIcon(() => uWriteToFile("notes.txt", uNotesGet(), append: false), Icons.add),
       //]),
     );

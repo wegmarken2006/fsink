@@ -26,6 +26,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:csv/csv.dart';
 
+import 'package:fl_chart/fl_chart.dart';
+
 const android = "android";
 const linux = "linux";
 const web = "web";
@@ -361,15 +363,17 @@ Widget uNotes() {
       toolbarHeight: 80.0,
       title: const Text('Notes'),
       actions: [
-        uInput(uCfg.noteFileName, 
-        (txt) {
-          uCfg.noteFileName = txt;
-        },
-        funOnSubmit: (txt) {
-          uCfg.noteFileName = txt;
-          uSetPersistString("noteFile", txt);
-          uNotesRefresh();
-        }),
+        uInput(
+          uCfg.noteFileName,
+          (txt) {
+            uCfg.noteFileName = txt;
+          },
+          funOnSubmit: (txt) {
+            uCfg.noteFileName = txt;
+            uSetPersistString("noteFile", txt);
+            uNotesRefresh();
+          },
+        ),
         uBtnIcon(
           () => uWriteToFile(uCfg.noteFileName, uNotesGet(), append: false),
           Icons.save,
@@ -845,4 +849,30 @@ Future<(String, List, List)> uGetFeed(String address) async {
 
   print(title);
   return (title, titles, links);
+}
+
+Widget uChartLine(
+  List<double> x,
+  List<List<double>> y,
+  String xTitle,
+  String yTitle,
+) {
+  List<FlSpot> spots = [];
+  List<LineChartBarData> llbd = [];
+  for (var i = 0; i < y.length; i++) {
+    spots = [];
+    for (var j = 0; j < x.length; j++) {
+      spots.add(FlSpot(x[j], y[i][j]));
+    }
+    llbd.add(LineChartBarData(spots: spots));
+  }
+  return LineChart(
+    LineChartData(
+      lineBarsData: llbd,
+      titlesData: FlTitlesData(
+        leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
+        bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
+      ),
+    ),
+  );
 }
