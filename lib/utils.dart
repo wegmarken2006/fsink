@@ -9,8 +9,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:camera/camera.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -35,11 +33,6 @@ const env =
     bool.hasEnvironment("MY_ENV") ? String.fromEnvironment("MY_ENV") : android;
 
 class UtilsCfg {
-  late List<CameraDescription> cameras;
-  late CameraDescription firstCamera;
-  late CameraController controller;
-  late Future<void> initializeControllerFuture;
-
   late SharedPreferences prefs;
 
   var noteController = TextEditingController();
@@ -50,13 +43,7 @@ class UtilsCfg {
   // await uCfg.init();
   Future<void> init() async {
     WidgetsFlutterBinding.ensureInitialized();
-
-    if ((env != linux) && (env != windows)) {
-      /* if (Platform.isAndroid) { */
-      cameras = await availableCameras();
-      firstCamera = cameras.first;
-    }
-
+    
     prefs = await SharedPreferences.getInstance();
   }
 }
@@ -593,116 +580,6 @@ String uGetPersistString(String valName) {
 void uSetPersistString(String valName, String value) {
   uCfg.prefs.setString(valName, value);
 }
-
-//import 'package:camera/camera.dart';
-
-/// Call inside initState
-void uInitStateCamera() {
-  uCfg.controller = CameraController(
-    // Get a specific camera from the list of available cameras.
-    uCfg.firstCamera,
-    // Define the resolution to use.
-    ResolutionPreset.medium,
-  );
-
-  // Next, initialize the controller. This returns a Future.
-  uCfg.initializeControllerFuture = uCfg.controller.initialize();
-}
-
-/// Example call:
-/// return uPage(
-///       context,
-///       widget.title,
-///       uCameraPreview()
-///     );
-Widget uCameraPreview() {
-  return FutureBuilder<void>(
-    future: uCfg.initializeControllerFuture,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.done) {
-        // If the Future is complete, display the preview.
-        return CameraPreview(uCfg.controller);
-      } else {
-        // Otherwise, display a loading indicator.
-        return const Center(child: CircularProgressIndicator());
-      }
-    },
-  );
-}
-
-/// Pass to floatingActionButton, example:
-///
-///  return uPage(
-///      context,
-///      widget.title,
-///      uCameraPreview(),
-///      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
-///    );
-///
-///  Optional save flag to store the image in Download
-Future<void> uCameraPicture(BuildContext context, [bool save = false]) async {
-  try {
-    // Ensure that the camera is initialized.
-    await uCfg.initializeControllerFuture;
-
-    // Attempt to take a picture and get the file `image`
-    // where it was saved.
-    final image = await uCfg.controller.takePicture();
-
-    var pathToSave = "";
-    if (save || env != android) {
-      pathToSave = await uGetPathForImageSave();
-      image.saveTo(pathToSave);
-    }
-
-    if (!context.mounted) return;
-
-    // If the picture was taken, display it on a new screen.
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => DisplayPictureScreen(
-              // Pass the automatically generated path to
-              // the DisplayPictureScreen widget.
-              imagePath: image.path,
-              pathToSave: pathToSave,
-            ),
-      ),
-    );
-  } catch (e) {
-    // If an error occurs, log the error to the console.
-    print(e);
-  }
-}
-
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-  final String pathToSave;
-
-  const DisplayPictureScreen({
-    super.key,
-    required this.imagePath,
-    required this.pathToSave,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (env == android) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Display the Picture')),
-        // The image is stored as a file on the device. Use the `Image.file`
-        // constructor with the given path to display the image.
-        body: Image.file(File(imagePath)),
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Display the Picture')),
-        body: Image.asset(pathToSave),
-      );
-    }
-  }
-}
-
 
 
 

@@ -5,9 +5,11 @@ import 'utils_chart.dart';
 import 'utils_feed.dart';
 import 'utils_csv.dart';
 import 'utils_isolate.dart';
+import 'utils_camera.dart';
 
 Future<void> main() async {
   await uCfg.init();
+  await uCameraCfg.init();
 
   runApp(const MyApp());
 }
