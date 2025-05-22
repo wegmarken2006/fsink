@@ -7,6 +7,7 @@
 //flutter build apk --dart-define=MY_ENV=android
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -857,6 +858,14 @@ Widget uChartLine(
   String xTitle,
   String yTitle,
 ) {
+  List<Color> colors = [];
+
+  for (var i = 0; i < y.length; i++) {
+    colors.add(
+      Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0),
+    );
+  }
+
   List<FlSpot> spots = [];
   List<LineChartBarData> llbd = [];
   for (var i = 0; i < y.length; i++) {
@@ -864,7 +873,7 @@ Widget uChartLine(
     for (var j = 0; j < x.length; j++) {
       spots.add(FlSpot(x[j], y[i][j]));
     }
-    llbd.add(LineChartBarData(spots: spots));
+    llbd.add(LineChartBarData(spots: spots, color: colors[i]));
   }
   return uFlex(
     LineChart(
@@ -880,18 +889,34 @@ Widget uChartLine(
 }
 
 Widget uChartBar(
-  List<String> x,
+  List<String> xNames,
   List<List<double>> y,
   String xTitle,
   String yTitle,
 ) {
-  List<BarChartGroupData> lbc = [];
+  List<Color> colors = [];
+
   for (var i = 0; i < y.length; i++) {
-    //BarChartRodData bcrd;
-    for (var j = 0; j < x.length; j++) {
-      //bcrd = BarChartRodData(toY: y[i][j] );
-      //bc = BarChartGroupData(x: x[j], barRods: bcrd)
+    colors.add(
+      Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0),
+    );
+  }
+
+  List<BarChartGroupData> lbc = [];
+  for (var j = 0; j < xNames.length; j++) {
+    BarChartRodData bcrd;
+    List<BarChartRodData> lbcrd = [];
+    for (var i = 0; i < y.length; i++) {
+      bcrd = BarChartRodData(toY: y[i][j], color: colors[i]);
+      lbcrd.add(bcrd);
     }
+    lbc.add(BarChartGroupData(x: j, barRods: lbcrd));
+  }
+  Widget getTitles(double value, TitleMeta meta) {
+    return SideTitleWidget(
+      meta: meta,
+      child: Text(xNames[value.toInt()], style: TextStyle(color: Colors.black)),
+    );
   }
 
   return uFlex(
@@ -900,7 +925,13 @@ Widget uChartBar(
         barGroups: lbc,
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
-          bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
+          bottomTitles: AxisTitles(
+            axisNameWidget: Text(xTitle),
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: getTitles,
+            ),
+          ),
         ),
       ),
     ),
