@@ -6,28 +6,20 @@
 //flutter build linux --dart-define=MY_ENV=linux
 //flutter build apk --dart-define=MY_ENV=android
 
-import 'dart:convert';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:url_launcher/url_launcher.dart';
-
-import 'dart:isolate';
-
-import 'package:webfeed_plus/webfeed_plus.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:external_path/external_path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:csv/csv.dart';
 
-import 'package:fl_chart/fl_chart.dart';
 
 const android = "android";
 const linux = "linux";
@@ -469,93 +461,6 @@ void uSleepS(int seconds) {
   sleep(duration);
 }
 
-//import 'package:csv/csv.dart';
-
-Future<List<List<Any>>> uReadCsv(String fileName) async {
-  var path = await uGetFileFullPath(fileName);
-  final input = File(path).openRead();
-  final listData =
-      await input
-          .transform(utf8.decoder)
-          .transform(CsvToListConverter())
-          .toList();
-
-  //var rData = await uReadFromFile(fileName);
-  //var file = File(path);
-  //var rData = file.readAsStringSync();
-
-  /*
-  List<List<Any>> listData =
-      CsvToListConverter(
-        fieldDelimiter: ",",
-        eol: "\n",
-        shouldParseNumbers: false,
-      ).convert(rData).toList();
-      */
-  return listData;
-}
-
-Future<void> uWriteCsv(String fileName, List<List<Any>> toWrite) async {
-  var res = ListToCsvConverter().convert(toWrite);
-
-  await uWriteToFile(fileName, res);
-}
-
-//import 'dart:isolate';
-
-typedef TxChan = SendPort;
-
-class Thread {
-  late Isolate isolate;
-  late ReceivePort receivePort;
-  late SendPort sendPort;
-  late ReceivePort exitPort;
-  //var uThreadStart = Isolate.spawn;
-  bool isRunning = false;
-
-  Thread();
-
-  /// Input "fun" must be static, must have TxChan input parameter.
-  void uThreadStart(Function(TxChan) fun, TxChan par) async {
-    if (!isRunning) {
-      isRunning = true;
-      isolate = await Isolate.spawn(fun, par, onExit: exitPort.sendPort);
-    }
-  }
-
-  void uThreadStop() {
-    isolate.kill();
-    receivePort.close();
-    exitPort.close();
-    isRunning = false;
-  }
-
-  void uRxChanCallback(Function(Any) onReceive) {
-    receivePort.listen(onReceive);
-  }
-
-  void uSend(Any message) {
-    sendPort.send(message);
-  }
-}
-
-Thread uThreadInit() {
-  var receivePort = ReceivePort();
-  //var isolate = await Isolate.spawn(fun!, par);
-  //receivePort.listen(onReceive);
-
-  var thread = Thread();
-  thread.receivePort = receivePort;
-  thread.exitPort = ReceivePort();
-  thread.sendPort = receivePort.sendPort;
-
-  thread.exitPort.listen((_) {
-    thread.isRunning = false;
-  });
-
-  return thread;
-}
-
 //import 'package:external_path/external_path.dart';
 //import 'package:permission_handler/permission_handler.dart';
 
@@ -798,142 +703,6 @@ class DisplayPictureScreen extends StatelessWidget {
   }
 }
 
-//import 'package:webfeed_plus/webfeed_plus.dart';
 
-/*
-Future<(String, List, List)> uGetFeed(String address) async {
-  List<String> titles = [];
-  List<String> links = [];
 
-  var feedUrl = address;
-  String title = "?";
 
-  var text = await http.read(Uri.parse(feedUrl));
-  var channel = RssFeed.parse(text);
-
-  title = channel.title!;
-  if (channel.items != null) {
-    for (var item in channel.items!) {
-      titles.add(item.title!);
-      links.add(item.link!);
-    }
-  }
-  
-  return (title, titles, links);
-}
-*/
-
-Future<(String, List, List)> uGetFeed(String address) async {
-  List<String> titles = [];
-  List<String> links = [];
-  List<RssItem> items = [];
-
-  String title = "?";
-
-  try {
-    final response = await http.get(Uri.parse(address));
-    if (response.statusCode == 200) {
-      final feed = RssFeed.parse(response.body);
-
-      items = feed.items ?? [];
-      title = feed.title!;
-      if (feed.items != null) {
-        for (var item in items) {
-          titles.add(item.title!);
-          links.add(item.link!);
-        }
-      }
-    }
-  } catch (e) {
-    print('Error fetching RSS feed: $e');
-  }
-
-  print(title);
-  return (title, titles, links);
-}
-
-Widget uChartLine(
-  List<double> x,
-  List<List<double>> y,
-  String xTitle,
-  String yTitle,
-) {
-  List<Color> colors = [];
-
-  for (var i = 0; i < y.length; i++) {
-    colors.add(
-      Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0),
-    );
-  }
-
-  List<FlSpot> spots = [];
-  List<LineChartBarData> llbd = [];
-  for (var i = 0; i < y.length; i++) {
-    spots = [];
-    for (var j = 0; j < x.length; j++) {
-      spots.add(FlSpot(x[j], y[i][j]));
-    }
-    llbd.add(LineChartBarData(spots: spots, color: colors[i]));
-  }
-  return uFlex(
-    LineChart(
-      LineChartData(
-        lineBarsData: llbd,
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
-          bottomTitles: AxisTitles(axisNameWidget: Text(xTitle)),
-        ),
-      ),
-    ),
-  );
-}
-
-Widget uChartBar(
-  List<String> xNames,
-  List<List<double>> y,
-  String xTitle,
-  String yTitle,
-) {
-  List<Color> colors = [];
-
-  for (var i = 0; i < y.length; i++) {
-    colors.add(
-      Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0),
-    );
-  }
-
-  List<BarChartGroupData> lbc = [];
-  for (var j = 0; j < xNames.length; j++) {
-    BarChartRodData bcrd;
-    List<BarChartRodData> lbcrd = [];
-    for (var i = 0; i < y.length; i++) {
-      bcrd = BarChartRodData(toY: y[i][j], color: colors[i]);
-      lbcrd.add(bcrd);
-    }
-    lbc.add(BarChartGroupData(x: j, barRods: lbcrd));
-  }
-  Widget getTitles(double value, TitleMeta meta) {
-    return SideTitleWidget(
-      meta: meta,
-      child: Text(xNames[value.toInt()], style: TextStyle(color: Colors.black)),
-    );
-  }
-
-  return uFlex(
-    BarChart(
-      BarChartData(
-        barGroups: lbc,
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(axisNameWidget: Text(yTitle)),
-          bottomTitles: AxisTitles(
-            axisNameWidget: Text(xTitle),
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: getTitles,
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
