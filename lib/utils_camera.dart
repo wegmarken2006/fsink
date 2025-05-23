@@ -46,7 +46,7 @@ void uInitStateCamera() {
 ///       uCameraPreview()
 ///     );
 Widget uCameraPreview() {
-  return FutureBuilder<void>(
+  return uFlex(FutureBuilder<void>(
     future: uCameraCfg.initializeControllerFuture,
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.done) {
@@ -57,7 +57,7 @@ Widget uCameraPreview() {
         return const Center(child: CircularProgressIndicator());
       }
     },
-  );
+  ));
 }
 
 /// Pass to floatingActionButton, example:

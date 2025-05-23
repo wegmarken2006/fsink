@@ -117,8 +117,8 @@ class Page0State extends State<Page0> {
       "Camera",
       uColNoExp([
         uCameraPreview(),
-        uRow([uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)]),
       ]),
+      uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
     );
   }
 }
