@@ -27,10 +27,38 @@ class UtilsCameraCfg {
 //import 'package:camera/camera.dart';
 
 /// Call inside initState
-void uInitStateCamera() {
+List<String> uInitStateCamera() {
   uCameraCfg.controller = CameraController(
     // Get a specific camera from the list of available cameras.
     uCameraCfg.firstCamera,
+    // Define the resolution to use.
+    ResolutionPreset.medium,
+  );
+
+  // Next, initialize the controller. This returns a Future.
+  uCameraCfg.initializeControllerFuture = uCameraCfg.controller.initialize();
+
+  List<String> descr = [];
+
+  for (var element in uCameraCfg.cameras) {
+    descr.add(element.name);
+  }
+  return descr;
+}
+
+Any uCameraChange(String descr) {
+
+  var index = 0;
+  for (var i = 0; i < uCameraCfg.cameras.length; i++) {
+    if (uCameraCfg.cameras[i].name  == descr) {
+      index = i;
+      break;
+    }
+  }
+  
+  uCameraCfg.controller = CameraController(
+    // Get a specific camera from the list of available cameras.
+    uCameraCfg.cameras[index],
     // Define the resolution to use.
     ResolutionPreset.medium,
   );

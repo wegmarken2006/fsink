@@ -103,21 +103,29 @@ class Page0 extends StatefulWidget {
 }
 
 class Page0State extends State<Page0> {
+  List<String> _cameraNames = [];
   @override
   initState() {
     super.initState();
 
-    uInitStateCamera();
+    _cameraNames = uInitStateCamera();
   }
 
+  Any _cameraChange(String descr) {
+    setState(() {
+      uCameraChange(descr);
+    });
+  }
+ 
   @override
   Widget build(BuildContext context) {
-    return uPage(
+    return uPageMenu(
       context,
       "Camera",
       uColNoExp([
         uCameraPreview(),
       ]),
+      uThreeDots(context, _cameraNames, _cameraChange),
       uBtnIcon(() => uCameraPicture(context), Icons.camera_alt)
     );
   }
