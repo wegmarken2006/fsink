@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import 'utils.dart';
 import 'utils_chart.dart';
@@ -10,6 +9,8 @@ import 'utils_camera.dart';
 import 'utils_webview.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await uCfg.init();
   await uCameraCfg.init();
 
@@ -515,24 +516,27 @@ class Page8 extends StatefulWidget {
 
 class Page8State extends State<Page8> {
 
-  final _controller = uInitWebview();
+  //final _controller = uInitWebview();
 
   @override
   initState() {
     super.initState();
-    initAsync();
+    //initAsync();
   }
 
+  /*
   void initAsync() async {
     await uLoadWebview(_controller);
   }
+  */
 
   @override
   Widget build(BuildContext context) {
     return uPage(
       context,
       "Webview",
-      uWebview(_controller),
+      //uWebview(_controller),
+      uWebview3(),
     );
   }
 }

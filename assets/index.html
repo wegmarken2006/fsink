@@ -1,16 +1,33 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <title>Minimal JS Example</title>
-  </head>
-  <body>
-    <button onclick="showMessage()">Click Me</button>
-    
-    <script>
-      function showMessage() {
-        alert("Hello from JavaScript!");
-      }
-    </script>
-  </body>
-</html>
 
+<head>
+  <script type="module" defer>
+    import { Chuck } from 'https://cdn.jsdelivr.net/npm/webchuck/+esm';
+
+    let theChuck; // global variable
+
+    document.getElementById('action').addEventListener('click', async () => {
+      // Initialize default ChucK object
+      if (theChuck === undefined) {
+        theChuck = await Chuck.init([]);
+      }
+      // Run ChucK code
+      theChuck.runCode(`
+          SinOsc sin => dac;
+          440 => sin.freq;
+          1::second => now;
+        `);
+
+      if (theChuck.context.state === "suspended") {
+        theChuck.context.resume();
+      }
+
+    });
+  </script>
+</head>
+
+<body>
+  <button id="action">Start and Play 3</button>
+</body>
+
+</html>

@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
+/*
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+*/
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
+import 'utils.dart';
+
+InAppWebViewController? webViewController;
+GlobalKey webViewKey = GlobalKey();
+
+Widget uWebview3() {
+  return InAppWebView(
+    key: webViewKey,
+    initialFile: "assets/index.html",
+    onWebViewCreated: (controller) {
+      webViewController = controller;
+    },
+  );
+}
+
+/*
 WebViewController uInitWebview() {
   var controller =
       WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -26,3 +45,4 @@ Future<void> uLoadWebview(WebViewController controller) async {
 Widget uWebview(WebViewController controller) {
   return WebViewWidget(controller: controller);
 }
+*/
