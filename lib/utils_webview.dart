@@ -11,7 +11,7 @@ import 'utils.dart';
 InAppWebViewController? webViewController;
 GlobalKey webViewKey = GlobalKey();
 
-Widget uWebview3() {
+Widget uWebview() {
   return InAppWebView(
     key: webViewKey,
     initialFile: "assets/index.html",
