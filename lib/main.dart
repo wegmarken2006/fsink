@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'utils.dart';
 import 'utils_chart.dart';
@@ -6,6 +7,7 @@ import 'utils_feed.dart';
 import 'utils_csv.dart';
 import 'utils_isolate.dart';
 import 'utils_camera.dart';
+import 'utils_webview.dart';
 
 Future<void> main() async {
   await uCfg.init();
@@ -72,6 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case "chart":
         uGoToPage(context, Page7());
         break;
+      case "webview":
+        uGoToPage(context, Page8());
+        break;
 
       default:
     }
@@ -84,6 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
       if (! _items.contains("camera")) {
         _items.add("camera");
       }
+    }
+    if (env == android) {
+      if (! _items.contains("webview")) {
+        _items.add("webview");
+      }
+
     }
 
     return uPageMenu(
@@ -490,6 +501,38 @@ class Page7State extends State<Page7> {
         uChartBar(["AAA", "bbb", "ccc", "ddd"], [[1.0, 2.0, 3.0, 4.0], [5.0, 4.0, 3.0, 2.0]], "category", "bars"),
         //uBtnIcon(() => uWriteToFile("notes.txt", uNotesGet(), append: false), Icons.add),
       ]),
+    );
+  }
+}
+
+
+class Page8 extends StatefulWidget {
+  const Page8({super.key});
+
+  @override
+  State<Page8> createState() => Page8State();
+}
+
+class Page8State extends State<Page8> {
+
+  final _controller = uInitWebview();
+
+  @override
+  initState() {
+    super.initState();
+    initAsync();
+  }
+
+  void initAsync() async {
+    await uLoadWebview(_controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return uPage(
+      context,
+      "Webview",
+      uWebview(_controller),
     );
   }
 }

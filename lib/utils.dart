@@ -6,6 +6,10 @@
 //flutter build linux --dart-define=MY_ENV=linux
 //flutter build apk --dart-define=MY_ENV=android
 
+//if error:
+// flutter clean
+// flutter pub upgrade
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 
