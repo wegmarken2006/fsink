@@ -10,14 +10,37 @@ import 'utils.dart';
 
 InAppWebViewController? webViewController;
 GlobalKey webViewKey = GlobalKey();
+var webViewLoaded = false;
 
 Widget uWebview() {
-  return InAppWebView(
-    key: webViewKey,
-    initialFile: "assets/index.html",
-    onWebViewCreated: (controller) {
-      webViewController = controller;
-    },
+  return Scaffold(
+    body: InAppWebView(
+      key: webViewKey,
+      initialFile: "assets/index.html",
+      onWebViewCreated: (controller) {
+        webViewController = controller;
+
+        controller.addJavaScriptHandler(
+          handlerName: 'messageHandler',
+          callback: (JavaScriptHandlerFunctionData data) {
+            print(data.args[0]);
+            webViewLoaded = true;
+          },
+        );
+      },
+      //onLoadStop: (controller, url) => webViewLoaded = true,
+    ),
+    floatingActionButton: FloatingActionButton(
+      child: Icon(Icons.message),
+      onPressed: () {
+        if (webViewLoaded) {
+          webViewController?.evaluateJavascript(
+            source: "window.myCustomFunction('Hello from Flutter');",
+            //source: """console.log("hello");""",
+          );
+        }
+      },
+    ),
   );
 }
 

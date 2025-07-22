@@ -1,16 +1,32 @@
 <html>
 
 <head>
+
   <script type="module" defer>
     import { Chuck } from 'https://cdn.jsdelivr.net/npm/webchuck/+esm';
 
+
+    window.myCustomFunction = function (message) {
+      //console.log("Called from Flutter:", message);
+      //alert("Hello from Flutter: " + message);
+      sendBack("BUTTON PRESSED " + message);
+    };
+
+    function sendBack(msg) {
+      window.flutter_inappwebview.callHandler('messageHandler', msg);
+    }
+
     let theChuck; // global variable
 
+    if (theChuck === undefined) {
+      theChuck = await Chuck.init([]);
+    }
+
+    sendBack("START");
+
+    /*
     document.getElementById('action').addEventListener('click', async () => {
       // Initialize default ChucK object
-      if (theChuck === undefined) {
-        theChuck = await Chuck.init([]);
-      }
       // Run ChucK code
       theChuck.runCode(`
           SinOsc sin => dac;
@@ -22,12 +38,16 @@
         theChuck.context.resume();
       }
 
+
     });
+    */
   </script>
 </head>
 
+<!--
 <body>
   <button id="action">Start and Play</button>
 </body>
+-->
 
 </html>

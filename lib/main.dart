@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _items.add("camera");
       }
     }
-    if ((env == android) || (env == web) || (env == windows)) {
+    if ((env == android) || (env == windows)) {
       if (! _items.contains("webview")) {
         _items.add("webview");
       }
