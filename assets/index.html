@@ -10,6 +10,9 @@
       //console.log("Called from Flutter:", message);
       //alert("Hello from Flutter: " + message);
       sendBack("BUTTON PRESSED " + message);
+      if (message == "sound") {
+        sound();
+      }
     };
 
     function sendBack(msg) {
@@ -18,15 +21,14 @@
 
     let theChuck; // global variable
 
+    // Initialize default ChucK object
     if (theChuck === undefined) {
       theChuck = await Chuck.init([]);
     }
 
     sendBack("START");
 
-    /*
-    document.getElementById('action').addEventListener('click', async () => {
-      // Initialize default ChucK object
+    function sound() {
       // Run ChucK code
       theChuck.runCode(`
           SinOsc sin => dac;
@@ -37,10 +39,8 @@
       if (theChuck.context.state === "suspended") {
         theChuck.context.resume();
       }
+    }
 
-
-    });
-    */
   </script>
 </head>
 

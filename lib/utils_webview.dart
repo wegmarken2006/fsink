@@ -35,7 +35,7 @@ Widget uWebview() {
       onPressed: () {
         if (webViewLoaded) {
           webViewController?.evaluateJavascript(
-            source: "window.myCustomFunction('Hello from Flutter');",
+            source: "window.myCustomFunction('sound');",
             //source: """console.log("hello");""",
           );
         }
