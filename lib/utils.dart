@@ -480,8 +480,12 @@ Future<void> uWriteToFile(
 }) async {
   var path = await uGetFileFullPath(fileName);
   var file = File(path);
+  int fileLen = 0;
+  try {
+    fileLen = await file.length();
+  } catch(e) {}
 
-  if (append) {
+  if (append && (fileLen > 0)) {
     toWrite = "\r\n$toWrite";
     file.writeAsString(toWrite, mode: FileMode.append);
   } else {
